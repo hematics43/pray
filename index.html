@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Working Prayers (Swipe Mode - Perfect Fit)</title>
+<style>
+  :root {
+    --radius: 20px;
+    --shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background: #f4f6fb;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .swiper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .prayer {
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: #fff;
+    padding: 30px;
+    height: 100%;
+  }
+
+  h2 {
+    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+    margin-bottom: 15px;
+    line-height: 1.4;
+  }
+
+  .hindi {
+    background: rgba(255, 255, 255, 0.25);
+    padding: 12px 15px;
+    border-radius: 12px;
+    font-size: clamp(1rem, 2vw, 1.1rem);
+    line-height: 1.5;
+    max-width: 90%;
+  }
+
+  /* 🎨 Each prayer color */
+  .p1 { background: #4a90e2; }
+  .p2 { background: #27ae60; }
+  .p3 { background: #f39c12; }
+  .p4 { background: #9b59b6; }
+  .p5 { background: #e74c3c; }
+  .p6 { background: #16a085; }
+  .p7 { background: #34495e; }
+  .p8 { background: #e67e22; }
+  .p9 { background: #2980b9; }
+  .p10 { background: #8e44ad; }
+
+  /* 🌕 Dots indicator */
+  .dots {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    transition: 0.3s;
+  }
+
+  .dot.active {
+    background: #fff;
+    transform: scale(1.3);
+  }
+</style>
+</head>
+<body>
+
+<div class="swiper" id="swiper">
+  <div class="prayer p1"><h2>Lord, bless the work of my hands and let Your favor rest upon me.</h2><div class="hindi">हे प्रभु, मेरे हाथों के काम को आशीर्वाद दो और अपनी कृपा मुझ पर बनाकर रखो।</div></div>
+  <div class="prayer p2"><h2>God, open doors that no one can shut, and close every wrong one.</h2><div class="hindi">हे भगवान, वे दरवाज़े खोलो जिन्हें कोई बंद नहीं कर सकता, और हर गलत रास्ता बंद कर दो।</div></div>
+  <div class="prayer p3"><h2>Father, give me wisdom, focus, and excellence in all I do.</h2><div class="hindi">हे पिता, मुझे हर काम में बुद्धि, एकाग्रता और श्रेष्ठता प्रदान करो।</div></div>
+  <div class="prayer p4"><h2>Lord, let my work bring glory to Your name.</h2><div class="hindi">हे प्रभु, मेरा कार्य आपके नाम की महिमा बढ़ाए।</div></div>
+  <div class="prayer p5"><h2>God, prosper the plans that align with Your will.</h2><div class="hindi">हे भगवान, उन योजनाओं को सफल करो जो आपकी इच्छा के अनुसार हैं।</div></div>
+  <div class="prayer p6"><h2>Father, remove every obstacle standing against my progress.</h2><div class="hindi">हे पिता, मेरी उन्नति में बाधा डालने वाली हर रुकावट को दूर करो।</div></div>
+  <div class="prayer p7"><h2>Lord, let Your Spirit guide my thoughts and decisions today.</h2><div class="hindi">हे प्रभु, आज मेरे विचारों और निर्णयों को अपनी आत्मा से मार्गदर्शन दो।</div></div>
+  <div class="prayer p8"><h2>God, fill me with peace, purpose, and productivity.</h2><div class="hindi">हे भगवान, मुझे शांति, उद्देश्य और कार्यशीलता से भर दो।</div></div>
+  <div class="prayer p9"><h2>Father, grant me favor before bosses, clients, and coworkers.</h2><div class="hindi">हे पिता, मेरे वरिष्ठों, ग्राहकों और सहकर्मियों के सामने मुझे अनुग्रह प्रदान करो।</div></div>
+  <div class="prayer p10"><h2>Lord, turn every challenge into a testimony of Your power.</h2><div class="hindi">हे प्रभु, हर चुनौती को आपकी सामर्थ का प्रमाण बना दो।</div></div>
+</div>
+
+<div class="dots" id="dots"></div>
+
+<script>
+const swiper = document.getElementById('swiper');
+const prayers = document.querySelectorAll('.prayer');
+const dotsContainer = document.getElementById('dots');
+
+/* Create dots dynamically */
+prayers.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'dot';
+  if (i === 0) dot.classList.add('active');
+  dotsContainer.appendChild(dot);
+});
+const dots = document.querySelectorAll('.dot');
+
+/* Update dots while scrolling */
+swiper.addEventListener('scroll', () => {
+  const index = Math.round(swiper.scrollLeft / swiper.clientWidth);
+  dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+});
+</script>
+
+</body>
+</html>

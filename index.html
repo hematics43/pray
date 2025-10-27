@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Prayers for all</title>
+<title>50 Prayers — Swipe Loop (Touch + Pointer)</title>
 <style>
   /* Reset & base */
   *{box-sizing:border-box;margin:0;padding:0}
@@ -103,6 +103,8 @@
     gap:8px;
     z-index:40;
     flex-wrap:wrap;
+    justify-content:center;
+    padding:6px;
   }
   .dot{
     width:10px;height:10px;border-radius:50%;
@@ -111,7 +113,7 @@
   }
   .dot.active{background:#fff;transform:scale(1.35)}
 
-  /* top controls (sound) */
+  /* top controls (sound + list) */
   .controls{
     position:absolute;
     top:14px;
@@ -136,17 +138,16 @@
     position:absolute;
     top:16px;
     left:16px;
-    color:rgba(255,255,255,0.85);
-    font-weight:600;
+    color:rgba(255,255,255,0.95);
+    font-weight:700;
     padding:8px 12px;
     border-radius:12px;
     background:rgba(0,0,0,0.12);
-    font-size:.9rem;
+    font-size:.92rem;
     z-index:50;
   }
 
   /* 50 gradients */
-  /* I'll name classes c1..c50. Reuse pleasing gradients. */
   .c1{background:linear-gradient(135deg,#4a90e2,#357ABD)} .c2{background:linear-gradient(135deg,#27ae60,#1e874b)}
   .c3{background:linear-gradient(135deg,#f39c12,#e67e22)} .c4{background:linear-gradient(135deg,#9b59b6,#8e44ad)}
   .c5{background:linear-gradient(135deg,#e74c3c,#c0392b)} .c6{background:linear-gradient(135deg,#16a085,#13866f)}
@@ -180,12 +181,14 @@
     .badge{top:12px;padding:6px 12px;font-size:.92rem}
     .legend{display:none}
     .controls{right:8px;top:8px}
+    .dots{bottom:12px}
   }
 </style>
 </head>
 <body>
 
   <div class="viewport" id="viewport" aria-label="Prayer swiper">
+    <div class="legend">50 Prayers — Swipe</div>
     <div class="controls">
       <button class="btn" id="audioBtn" aria-pressed="false">🔈 Play</button>
       <button class="btn" id="listBtn" title="Open list">≡</button>
@@ -283,27 +286,25 @@ prayers.forEach((p,i) => {
 
 /* ----- Helpers ----- */
 function escapeHtml(s){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
-function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
 
 /* ----- Swipe / Pointer / Touch handling (manual loop) ----- */
 let startX = 0;
 let isPointerDown = false;
 let lastTranslate = 0;
-let width = viewport.clientWidth;
 
 function setTranslate(translatePx){
   track.style.transform = `translateX(${translatePx}px)`;
 }
 
 function update(){
-  width = viewport.clientWidth;
-  const translate = -index * width;
+  const w = viewport.clientWidth;
+  const translate = -index * w;
   track.style.transition = 'transform .42s cubic-bezier(.22,.95,.2,1)';
   setTranslate(translate);
   // dots
   Array.from(dotsContainer.children).forEach((d, i) => d.classList.toggle('active', i === index));
-  // focus badge for accessibility
-  const badge = track.children[index].querySelector('.badge');
+  // focus badge
+  const badge = track.children[index]?.querySelector('.badge');
   if(badge) badge.focus({preventScroll:true});
 }
 
@@ -313,7 +314,7 @@ track.addEventListener('pointerdown', (e) => {
   startX = e.clientX;
   lastTranslate = -index * viewport.clientWidth;
   track.style.transition = 'none';
-  track.setPointerCapture(e.pointerId);
+  try { track.setPointerCapture(e.pointerId); } catch (err) {}
 });
 track.addEventListener('pointermove', (e) => {
   if(!isPointerDown) return;
@@ -331,13 +332,14 @@ track.addEventListener('pointerup', (e) => {
     index = (index + 1) % total;
   }
   update();
+  try { track.releasePointerCapture && track.releasePointerCapture(e.pointerId); } catch(err) {}
 });
 track.addEventListener('pointercancel', () => {
   isPointerDown = false;
   update();
 });
 
-/* For older touch devices: keep touch events as fallback */
+/* touch fallback */
 track.addEventListener('touchstart', (e)=> {
   if(e.touches && e.touches[0]) {
     startX = e.touches[0].clientX;
@@ -370,7 +372,6 @@ window.addEventListener('keydown', (e) => {
 
 /* window resize -> adjust transform */
 window.addEventListener('resize', () => {
-  // small debounce
   clearTimeout(window.__resizetimer);
   window.__resizetimer = setTimeout(() => update(), 80);
 });
@@ -393,19 +394,13 @@ function startAmbient(){
   masterGain.gain.value = 0.02; // very low volume
   masterGain.connect(audioCtx.destination);
 
-  // create two slow oscillators for a soft ambient pad
-  const o1 = audioCtx.createOscillator();
-  o1.type = 'sine'; o1.frequency.value = 220;
-  const o2 = audioCtx.createOscillator();
-  o2.type = 'sine'; o2.frequency.value = 277.18; // a slightly detuned tone
+  const o1 = audioCtx.createOscillator(); o1.type = 'sine'; o1.frequency.value = 220;
+  const o2 = audioCtx.createOscillator(); o2.type = 'sine'; o2.frequency.value = 277.18;
 
   const g1 = audioCtx.createGain(); g1.gain.value = 0.6;
   const g2 = audioCtx.createGain(); g2.gain.value = 0.5;
 
-  // gentle LFO to modulate amplitude
-  lfo = audioCtx.createOscillator();
-  lfo.type = 'sine';
-  lfo.frequency.value = 0.07; // very slow
+  lfo = audioCtx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.07;
   const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 0.25;
 
   lfo.connect(lfoGain);
@@ -417,7 +412,6 @@ function startAmbient(){
 
   o1.start(); o2.start(); lfo.start();
 
-  // store for stop
   osc = [o1,o2];
   audioPlaying = true;
   audioBtn.textContent = '🔊 On';
@@ -426,11 +420,11 @@ function startAmbient(){
 
 function stopAmbient(){
   if(!audioCtx) return;
-  // stop oscillators
-  osc.forEach(o=>o.stop());
-  lfo.stop();
-  // close context
-  audioCtx.close();
+  try {
+    osc.forEach(o=>o.stop());
+    lfo.stop();
+    audioCtx.close();
+  } catch(err){}
   audioCtx = null;
   masterGain = null;
   osc = null;
@@ -440,20 +434,13 @@ function stopAmbient(){
   audioBtn.setAttribute('aria-pressed','false');
 }
 
-/* audio button toggles start/stop (must be user gesture) */
 audioBtn.addEventListener('click', () => {
   if(!audioPlaying) {
-    try {
-      startAmbient();
-    } catch(err) {
-      console.warn('Audio start failed', err);
-    }
-  } else {
-    stopAmbient();
-  }
+    try { startAmbient(); } catch(err) { console.warn('Audio start failed', err); }
+  } else { stopAmbient(); }
 });
 
-/* list button: quick jump to number (simple prompt) */
+/* list button: quick jump to number */
 const listBtn = document.getElementById('listBtn');
 listBtn.addEventListener('click', ()=>{
   const n = prompt(`Enter prayer number (1–${total}) to jump to:`);
@@ -467,7 +454,7 @@ listBtn.addEventListener('click', ()=>{
   }
 });
 
-/* Accessibility: announce slide changes with aria-live element (optional) */
+/* Accessibility: announce slide changes */
 const live = document.createElement('div');
 live.setAttribute('aria-live','polite');
 live.style.position='absolute'; live.style.left='-9999px';
@@ -478,7 +465,7 @@ update = function(){
   track.style.transition = 'transform .42s cubic-bezier(.22,.95,.2,1)';
   track.style.transform = `translateX(${-index * w}px)`;
   Array.from(dotsContainer.children).forEach((d,i)=> d.classList.toggle('active', i===index));
-  const badge = track.children[index].querySelector('.badge');
+  const badge = track.children[index]?.querySelector('.badge');
   if(badge) badge.focus({preventScroll:true});
   live.textContent = `Showing prayer ${index+1} of ${total}`;
 };

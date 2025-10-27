@@ -1,143 +1,328 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Working Prayers (Swipe Mode - Perfect Fit)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>50 Prayers — Swipe Loop (English + Hindi)</title>
 <style>
-  :root {
-    --radius: 20px;
-    --shadow: 0 8px 25px rgba(0,0,0,0.15);
+  /* Basic reset */
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: #f3f6fb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
   }
 
-  * {
-    box-sizing: border-box;
+  /* container */
+  .viewport{
+    width:100%;
+    max-width:540px;
+    height:92vh;
+    max-height:820px;
+    border-radius:20px;
+    overflow:hidden;
+    position:relative;
+    box-shadow:0 18px 50px rgba(16,24,40,0.12);
   }
 
-  body {
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    width: 100vw;
-    font-family: 'Segoe UI', Roboto, sans-serif;
-    background: #f4f6fb;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  /* slider inner */
+  .track{
+    display:flex;
+    height:100%;
+    transition:transform .45s cubic-bezier(.2,.9,.25,1);
+    will-change:transform;
+    touch-action:pan-y;
   }
 
-  .swiper {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    overflow-x: scroll;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
+  /* each card */
+  .card{
+    flex:0 0 100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:44px 28px;
+    color:#fff;
+    position:relative;
   }
 
-  .prayer {
-    flex: 0 0 100%;
-    scroll-snap-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
+  .badge{
+    position:absolute;
+    top:18px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(255,255,255,0.18);
+    color:#fff;
+    padding:8px 16px;
+    border-radius:999px;
+    font-weight:600;
+    letter-spacing:0.6px;
+    box-shadow:0 6px 18px rgba(2,6,23,0.08);
+    backdrop-filter: blur(4px);
+  }
+
+  h2{
+    font-size:clamp(1.1rem,2.6vw,1.6rem);
+    line-height:1.4;
+    margin-bottom:18px;
+    max-width:88%;
+    font-weight:700;
+    text-shadow:0 6px 18px rgba(2,6,23,0.12);
+  }
+
+  .hin{
+    background:rgba(255,255,255,0.18);
     color: #fff;
-    padding: 30px;
-    height: 100%;
+    padding:12px 16px;
+    border-radius:12px;
+    max-width:88%;
+    line-height:1.6;
+    font-size:clamp(.95rem,2vw,1.05rem);
+    box-shadow:0 6px 18px rgba(2,6,23,0.06) inset;
   }
 
-  h2 {
-    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
-    margin-bottom: 15px;
-    line-height: 1.4;
+  /* dots */
+  .dots{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    bottom:18px;
+    display:flex;
+    gap:8px;
+    z-index:20;
   }
-
-  .hindi {
-    background: rgba(255, 255, 255, 0.25);
-    padding: 12px 15px;
-    border-radius: 12px;
-    font-size: clamp(1rem, 2vw, 1.1rem);
-    line-height: 1.5;
-    max-width: 90%;
+  .dot{
+    width:10px;height:10px;border-radius:50%;
+    background:rgba(255,255,255,0.3);
+    transition:transform .22s, background .22s;
   }
+  .dot.active{background:#fff;transform:scale(1.35)}
 
-  /* 🎨 Each prayer color */
-  .p1 { background: #4a90e2; }
-  .p2 { background: #27ae60; }
-  .p3 { background: #f39c12; }
-  .p4 { background: #9b59b6; }
-  .p5 { background: #e74c3c; }
-  .p6 { background: #16a085; }
-  .p7 { background: #34495e; }
-  .p8 { background: #e67e22; }
-  .p9 { background: #2980b9; }
-  .p10 { background: #8e44ad; }
+  /* gradients palette (50 entries) */
+  .c1{background:linear-gradient(135deg,#4a90e2,#357ABD)} .c2{background:linear-gradient(135deg,#27ae60,#1e874b)}
+  .c3{background:linear-gradient(135deg,#f39c12,#e67e22)} .c4{background:linear-gradient(135deg,#9b59b6,#8e44ad)}
+  .c5{background:linear-gradient(135deg,#e74c3c,#c0392b)} .c6{background:linear-gradient(135deg,#16a085,#13866f)}
+  .c7{background:linear-gradient(135deg,#34495e,#2c3e50)} .c8{background:linear-gradient(135deg,#e67e22,#d35400)}
+  .c9{background:linear-gradient(135deg,#2980b9,#2471a3)} .c10{background:linear-gradient(135deg,#8e44ad,#71368a)}
+  .c11{background:linear-gradient(135deg,#c0392b,#96281b)} .c12{background:linear-gradient(135deg,#1abc9c,#16a085)}
+  .c13{background:linear-gradient(135deg,#2ecc71,#27ae60)} .c14{background:linear-gradient(135deg,#f1c40f,#f39c12)}
+  .c15{background:linear-gradient(135deg,#d35400,#a84300)} .c16{background:linear-gradient(135deg,#7f8c8d,#636e72)}
+  .c17{background:linear-gradient(135deg,#8e44ad,#6c3483)} .c18{background:linear-gradient(135deg,#3498db,#2e86c1)}
+  .c19{background:linear-gradient(135deg,#9b59b6,#8e44ad)} .c20{background:linear-gradient(135deg,#16a085,#0e6655)}
+  .c21{background:linear-gradient(135deg,#3b82f6,#1e40af)} .c22{background:linear-gradient(135deg,#06b6d4,#075985)}
+  .c23{background:linear-gradient(135deg,#fb7185,#be185d)} .c24{background:linear-gradient(135deg,#60a5fa,#2563eb)}
+  .c25{background:linear-gradient(135deg,#f97316,#ea580c)} .c26{background:linear-gradient(135deg,#34d399,#059669)}
+  .c27{background:linear-gradient(135deg,#f472b6,#c026d3)} .c28{background:linear-gradient(135deg,#f87171,#ef4444)}
+  .c29{background:linear-gradient(135deg,#60a5fa,#3b82f6)} .c30{background:linear-gradient(135deg,#a78bfa,#7c3aed)}
+  .c31{background:linear-gradient(135deg,#fda4af,#f43f5e)} .c32{background:linear-gradient(135deg,#86efac,#22c55e)}
+  .c33{background:linear-gradient(135deg,#fde047,#f59e0b)} .c34{background:linear-gradient(135deg,#fbcfe8,#f472b6)}
+  .c35{background:linear-gradient(135deg,#93c5fd,#2563eb)} .c36{background:linear-gradient(135deg,#a3e635,#65a30d)}
+  .c37{background:linear-gradient(135deg,#fb923c,#f97316)} .c38{background:linear-gradient(135deg,#60a5fa,#0284c7)}
+  .c39{background:linear-gradient(135deg,#34d399,#059669)} .c40{background:linear-gradient(135deg,#c084fc,#7c3aed)}
+  .c41{background:linear-gradient(135deg,#f43f5e,#be123c)} .c42{background:linear-gradient(135deg,#60a5fa,#0284c7)}
+  .c43{background:linear-gradient(135deg,#fb923c,#ea580c)} .c44{background:linear-gradient(135deg,#a78bfa,#6d28d9)}
+  .c45{background:linear-gradient(135deg,#fb7185,#ef4444)} .c46{background:linear-gradient(135deg,#34d399,#059669)}
+  .c47{background:linear-gradient(135deg,#60a5fa,#0284c7)} .c48{background:linear-gradient(135deg,#fda4af,#fb7185)}
+  .c49{background:linear-gradient(135deg,#a7f3d0,#10b981)} .c50{background:linear-gradient(135deg,#fda4af,#fb7185)}
 
-  /* 🌕 Dots indicator */
-  .dots {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 6px;
-    z-index: 10;
-  }
-
-  .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.4);
-    transition: 0.3s;
-  }
-
-  .dot.active {
-    background: #fff;
-    transform: scale(1.3);
+  /* responsive tweaks */
+  @media (max-width:420px){
+    .viewport{max-width:100%;height:100vh;border-radius:0}
+    .card{padding:28px}
+    .badge{top:12px;padding:6px 12px;font-size:.9rem}
   }
 </style>
 </head>
 <body>
+  <div class="viewport" id="viewport">
+    <div class="track" id="track">
+      <!-- slides are injected by JS -->
+    </div>
 
-<div class="swiper" id="swiper">
-  <div class="prayer p1"><h2>Lord, bless the work of my hands and let Your favor rest upon me.</h2><div class="hindi">हे प्रभु, मेरे हाथों के काम को आशीर्वाद दो और अपनी कृपा मुझ पर बनाकर रखो।</div></div>
-  <div class="prayer p2"><h2>God, open doors that no one can shut, and close every wrong one.</h2><div class="hindi">हे भगवान, वे दरवाज़े खोलो जिन्हें कोई बंद नहीं कर सकता, और हर गलत रास्ता बंद कर दो।</div></div>
-  <div class="prayer p3"><h2>Father, give me wisdom, focus, and excellence in all I do.</h2><div class="hindi">हे पिता, मुझे हर काम में बुद्धि, एकाग्रता और श्रेष्ठता प्रदान करो।</div></div>
-  <div class="prayer p4"><h2>Lord, let my work bring glory to Your name.</h2><div class="hindi">हे प्रभु, मेरा कार्य आपके नाम की महिमा बढ़ाए।</div></div>
-  <div class="prayer p5"><h2>God, prosper the plans that align with Your will.</h2><div class="hindi">हे भगवान, उन योजनाओं को सफल करो जो आपकी इच्छा के अनुसार हैं।</div></div>
-  <div class="prayer p6"><h2>Father, remove every obstacle standing against my progress.</h2><div class="hindi">हे पिता, मेरी उन्नति में बाधा डालने वाली हर रुकावट को दूर करो।</div></div>
-  <div class="prayer p7"><h2>Lord, let Your Spirit guide my thoughts and decisions today.</h2><div class="hindi">हे प्रभु, आज मेरे विचारों और निर्णयों को अपनी आत्मा से मार्गदर्शन दो।</div></div>
-  <div class="prayer p8"><h2>God, fill me with peace, purpose, and productivity.</h2><div class="hindi">हे भगवान, मुझे शांति, उद्देश्य और कार्यशीलता से भर दो।</div></div>
-  <div class="prayer p9"><h2>Father, grant me favor before bosses, clients, and coworkers.</h2><div class="hindi">हे पिता, मेरे वरिष्ठों, ग्राहकों और सहकर्मियों के सामने मुझे अनुग्रह प्रदान करो।</div></div>
-  <div class="prayer p10"><h2>Lord, turn every challenge into a testimony of Your power.</h2><div class="hindi">हे प्रभु, हर चुनौती को आपकी सामर्थ का प्रमाण बना दो।</div></div>
-</div>
-
-<div class="dots" id="dots"></div>
+    <div class="dots" id="dots" aria-hidden="false"></div>
+  </div>
 
 <script>
-const swiper = document.getElementById('swiper');
-const prayers = document.querySelectorAll('.prayer');
+/* 50 mixed prayers (English + Hindi) */
+const prayers = [
+  {en:"Lord, bless the work of my hands and let Your favor rest upon me.", hi:"हे प्रभु, मेरे हाथों के काम को आशीर्वाद दो और अपनी कृपा मुझ पर बनाकर रखो।"},
+  {en:"God, give me wisdom to make right decisions and courage to act.", hi:"हे भगवान, मुझे सही निर्णय लेने की बुद्धि और कार्य करने का साहस दो।"},
+  {en:"May peace and compassion guide every step I take today.", hi:"आइए आज मेरे हर कदम को शांति और करुणा मार्गदर्शित करें।"},
+  {en:"ॐ सरस्वत्यै नमः — Grant me clarity and the gift of learning.", hi:"ॐ सरस्वत्यै नमः — मुझे स्पष्टता और अध्ययन का वरदान दो।"},
+  {en:"Allah, make my intentions pure and my actions pleasing to You.", hi:"अल्लाह, मेरी नीयतों को पाक और मेरे कर्मों को आपके लिए स्वीकार्य बनाओ।"},
+  {en:"Waheguru, bless my efforts and keep my heart humble.", hi:"वाहेगुरु, मेरे प्रयासों को आशीर्वाद दो और मेरे हृदय को नम्र रखो।"},
+  {en:"May I see the good in others and serve with a joyful heart.", hi:"मैं दूसरों में भलाई देख सकूँ और हर्षपूर्ण हृदय से सेवा कर सकूँ।"},
+  {en:"Lord, heal the broken places in me and make me whole.", hi:"हे प्रभु, मुझमें टूटी जगहों को चंगा कर मुझे पूर्ण बनाओ।"},
+  {en:"May all beings be free from suffering and full of ease.", hi:"सभी जीव दुखों से मुक्त और सुख-शान्ति से भरपूर हों।"},
+  {en:"Teach me patience (Sabr) in trials and gratitude in blessings.", hi:"प्रयासों में मुझे सब्र और आशीर्वाद में कृतज्ञता सिखाओ।"},
+  {en:"God, open doors of opportunity that align with Your will.", hi:"हे भगवान, ऐसी अवसरों की राह खोलो जो आपकी इच्छा से मेल खाती हों।"},
+  {en:"Father, grant me honesty in work and humility in success.", hi:"हे पिता, मेरे कार्य में ईमानदारी और सफलता में विनम्रता दो।"},
+  {en:"May compassion fill my words, and kindness guide my hands.", hi:"मेरे शब्दों को करुणा और मेरे कर्मों को दया मार्गदर्शन करे।"},
+  {en:"ॐ नमः शिवाय — Strengthen me to overcome obstacles.", hi:"ॐ नमः शिवाय — मुझे बाधाओं पर विजय पाने की शक्ति दो।"},
+  {en:"Ya Allah, help me to trust Your timing and plan.", hi:"या अल्लाह, मुझे आपके समय और योजना पर भरोसा करना सिखाओ।"},
+  {en:"Satnam Waheguru — Help me live truthfully and serve others.", hi:"सतनाम वाहेगुरु — मुझे सत्यनिष्ठ जीवन जीने और दूसरों की सेवा करने में मदद करो।"},
+  {en:"Bless my family, protect those I love, and keep us united.", hi:"मेरे परिवार को आशीर्वाद दो, जिनसे मैं प्यार करता/करती हूँ उन्हें सुरक्षित रखो और हमें एकजुट रखो।"},
+  {en:"Lord, give me a heart that forgives quickly and loves deeply.", hi:"हे प्रभु, मुझे शीघ्र क्षमा करने और गहराई से प्रेम करने वाला हृदय दो।"},
+  {en:"May my work be honest, useful, and bring blessing to many.", hi:"मेरा कार्य ईमानदार, उपयोगी हो और कई लोगों के लिए आशीर्वाद बने।"},
+  {en:"God, protect me from harm and guide my path each day.", hi:"हे भगवान, मुझे हर बुराई से बचाओ और मेरे मार्ग का मार्गदर्शन करो।"},
+  {en:"Let awareness (mindfulness) steady my mind and soften my heart.", hi:"स्मरणशीलता मेरे मन को स्थिर करे और मेरे हृदय को कोमल बनाए।"},
+  {en:"Bless the leaders with wisdom and the poor with relief.", hi:"नेताओं को बुद्धि और गरीबों को राहत का आशीर्वाद दो।"},
+  {en:"Help me to speak truth with love and act with courage.", hi:"मुझे प्रेम से सत्य बोलना और साहसपूर्वक कार्य करना सिखाओ।"},
+  {en:"May the light of the Divine illuminate my decisions.", hi:"दिव्य प्रकाश मेरे निर्णयों को प्रकाशित करे।"},
+  {en:"God, grant me restful sleep and strength for tomorrow.", hi:"हे भगवान, मुझे शांतिपूर्ण निद्रा और कल के लिए शक्ति दो।"},
+  {en:"Guide me to use my talents to uplift others.", hi:"मुझे अपनी प्रतिभाओं का उपयोग दूसरों को उठाने के लिए करना सिखाओ।"},
+  {en:"May I be generous with what I have and mindful of others' needs.", hi:"मैं अपनी चीजों में उदार रहूँ और दूसरों की ज़रूरतों के प्रति सचेत रहूँ।"},
+  {en:"Lord, give me courage to start again when I fail.", hi:"हे प्रभु, विफल होने पर फिर से शुरू करने का साहस दो।"},
+  {en:"Grant me peace in decision and clarity in confusion.", hi:"निर्णय में शांति और भ्रम में स्पष्टता प्रदान करो।"},
+  {en:"May truth, mercy, and justice shape my daily life.", hi:"सत्य, दया और न्याय मेरे दैनिक जीवन को आकार दें।"},
+  {en:"Protect those who travel, work, and serve others today.", hi:"आज जो यात्रा करते हैं, काम करते हैं और दूसरों की सेवा करते हैं उन्हें रक्षा प्रदान करो।"},
+  {en:"May I be a calm presence in every stressful place.", hi:"मैं हर तनावपूर्ण स्थान पर एक शांत उपस्थिति बन सकूँ।"},
+  {en:"Bless the sick with healing and the grieving with comfort.", hi:"बीमारों को आरोग्य और शोक करने वालों को सांत्वना का आशीर्वाद दो।"},
+  {en:"Help me to forgive myself and learn from my mistakes.", hi:"मुझे खुद को माफ करना और अपनी गलतियों से सीखना सिखाओ।"},
+  {en:"May love rule my family, and peace settle in our home.", hi:"प्रेम मेरे परिवार पर राज करे और हमारे घर में शांति रहे।"},
+  {en:"Lord, lead me to honest friends and true companionship.", hi:"हे प्रभु, मुझे ईमानदार मित्रों और सच्चे साथियों की ओर ले चलो।"},
+  {en:"Allah, bless our work so it brings benefit to the community.", hi:"अल्लाह, हमारे कार्यों को आशीर्वाद दो ताकि वे समुदाय के लिए लाभकारी हों।"},
+  {en:"May my speech build up others and never destroy.", hi:"मेरी बातें दूसरों का निर्माण करें और विनाश न करें।"},
+  {en:"Grant me a grateful heart for small and large blessings.", hi:"छोटे और बड़े आशीर्वादों के लिए मुझे कृतज्ञ हृदय दो।"},
+  {en:"Let me find rest in You when the world feels too heavy.", hi:"जब दुनिया बहुत भारी लगे तब मुझे आपमें विश्राम मिल जाए।"},
+  {en:"May my choices reflect care for Earth and future generations.", hi:"मेरे निर्णय पृथ्वी और आने वाली पीढ़ियों के लिए देखभाल दिखाएँ।"},
+  {en:"Grant me perseverance; steady my hands and my will.", hi:"मुझे दृढ़ता दो; मेरे हाथों और इच्छाशक्ति को स्थिर करो।"},
+  {en:"Help me to listen more than I speak, and to understand.", hi:"मुझे बोलने से अधिक सुनना और समझना सिखाओ।"},
+  {en:"Bless those who serve the sick and the poor this day.", hi:"उन लोगों को आशीर्वाद दो जो आज बीमारों और गरीबों की सेवा करते हैं।"},
+  {en:"May joy arise in small moments and grow into deep peace.", hi:"छोटी-छोटी क्षणों में आनंद उत्पन्न हो और वह गहरा शांति बन जाए।"},
+  {en:"Guide my finances so I give wisely and live simply.", hi:"मेरी वित्त व्यवस्था का मार्गदर्शन करो ताकि मैं बुद्धिमानी से दूँ और सरल जीवन जिऊँ।"},
+  {en:"Lord, teach me to wait patiently for what is right.", hi:"हे प्रभु, मुझे सही के लिए धैर्यपूर्वक प्रतीक्षा करना सिखाओ।"},
+  {en:"May compassion be my first response to every suffering.", hi:"हर पीड़ा के लिए करुणा मेरी प्रथम प्रतिक्रिया हो।"},
+  {en:"Grant me humility in success and dignity in defeat.", hi:"सफलता में विनम्रता और हार में गरिमा प्रदान करो।"},
+  {en:"Help children grow in safety, joy, and wisdom.", hi:"बच्चों को सुरक्षा, आनंद और बुद्धि में बढ़ने में मदद करो।"},
+  {en:"May I be a peacemaker where conflicts arise.", hi:"जहाँ संघर्ष उठें, मैं वहां शांति बन सकूँ।"},
+  {en:"Thank You for guiding me through every season of life.", hi:"जीवन के हर चरण में मेरा मार्गदर्शन करने के लिए धन्यवाद।"}
+];
+
+/* DOM elements */
+const track = document.getElementById('track');
 const dotsContainer = document.getElementById('dots');
 
-/* Create dots dynamically */
-prayers.forEach((_, i) => {
-  const dot = document.createElement('div');
-  dot.className = 'dot';
-  if (i === 0) dot.classList.add('active');
-  dotsContainer.appendChild(dot);
-});
-const dots = document.querySelectorAll('.dot');
+const total = prayers.length;
 
-/* Update dots while scrolling */
-swiper.addEventListener('scroll', () => {
-  const index = Math.round(swiper.scrollLeft / swiper.clientWidth);
-  dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+/* build slides */
+prayers.forEach((p, i) => {
+  const div = document.createElement('section');
+  div.className = `card c${(i%50)+1}`; // c1 .. c50
+  div.innerHTML = `
+    <div class="badge">Prayer ${i+1} of ${total}</div>
+    <h2>${escapeHtml(p.en)}</h2>
+    <div class="hin">${escapeHtml(p.hi)}</div>
+  `;
+  track.appendChild(div);
 });
+
+/* create dots */
+for(let i=0;i<total;i++){
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0 ? ' active' : '');
+  d.dataset.index = i;
+  d.setAttribute('aria-label', `Go to prayer ${i+1}`);
+  d.addEventListener('click', () => {
+    index = i;
+    update();
+  });
+  dotsContainer.appendChild(d);
+}
+
+/* helpers */
+function escapeHtml(s){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+
+/* slider logic (manual loop) */
+let index = 0;
+let isDragging = false;
+let startX = 0;
+let currentTranslate = 0;
+let prevTranslate = 0;
+let animationID = 0;
+
+const cards = Array.from(document.querySelectorAll('.card'));
+const cardCount = cards.length;
+
+/* set initial position */
+update();
+
+/* Pointer / touch handlers (simple swipe handling) */
+track.addEventListener('pointerdown', pointerDown);
+track.addEventListener('pointermove', pointerMove);
+track.addEventListener('pointerup', pointerUp);
+track.addEventListener('pointercancel', pointerUp);
+track.addEventListener('pointerleave', pointerUp);
+
+/* prevent image dragging selection */
+track.addEventListener('dragstart', (e)=>e.preventDefault());
+
+function pointerDown(e){
+  isDragging = true;
+  startX = e.clientX || (e.touches && e.touches[0].clientX);
+  track.style.transition = 'none';
+}
+function pointerMove(e){
+  if(!isDragging) return;
+  const x = e.clientX || (e.touches && e.touches[0].clientX);
+  const dx = x - startX;
+  const width = viewport.clientWidth;
+  track.style.transform = `translateX(${ -index*width + dx }px)`;
+}
+function pointerUp(e){
+  if(!isDragging) return;
+  isDragging = false;
+  track.style.transition = ''; // restore transition
+  const x = (e.clientX !== undefined) ? e.clientX : (e.changedTouches ? e.changedTouches[0].clientX : startX);
+  const dx = x - startX;
+  const width = viewport.clientWidth;
+  const threshold = Math.max(40, width * 0.15);
+  if(dx > threshold){
+    index = (index - 1 + cardCount) % cardCount;
+  } else if(dx < -threshold){
+    index = (index + 1) % cardCount;
+  }
+  update();
+}
+
+/* keyboard support */
+window.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft'){ index = (index - 1 + cardCount) % cardCount; update(); }
+  if(e.key === 'ArrowRight'){ index = (index + 1) % cardCount; update(); }
+  if(e.key === 'Home'){ index = 0; update(); }
+  if(e.key === 'End'){ index = cardCount - 1; update(); }
+});
+
+/* resize behavior */
+window.addEventListener('resize', update);
+
+/* update visual position + dots */
+function update(){
+  const w = viewport.clientWidth;
+  track.style.transform = `translateX(-${index * w}px)`;
+  const dots = Array.from(dotsContainer.children);
+  dots.forEach((d,i)=> d.classList.toggle('active', i===index));
+  /* ensure focus for accessibility */
+  cards[index].querySelector('.badge')?.focus();
+}
+
+/* convenience references */
+const viewport = document.getElementById('viewport');
+
+/* touch support fallback for older devices (touch events) */
+track.addEventListener('touchstart', (e)=> pointerDown(e.touches ? e.touches[0] : e), {passive:true});
+track.addEventListener('touchmove', (e)=> pointerMove(e.touches ? e.touches[0] : e), {passive:true});
+track.addEventListener('touchend', (e)=> pointerUp(e.changedTouches ? e.changedTouches[0] : e), {passive:true});
+
 </script>
-
 </body>
 </html>
